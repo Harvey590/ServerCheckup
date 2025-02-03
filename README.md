@@ -4,6 +4,11 @@ The full check of all on your server that is useful for you (when you take new s
 
 `bash <(curl -sL https://raw.githubusercontent.com/Harvey590/ServerCheckup/main/server_checkup.sh)`
 
+
+
+Following sections:
+
+
 SERVER TIME NOW
 
 LOCATION
