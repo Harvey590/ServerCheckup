@@ -318,7 +318,7 @@ END {
     # Network Test
     echo -e "${BL}\n NETWORK TEST RESULTS${CR}"
     echo "Wait 2-5 min while checking..."
-    curl -sL yabs.sh | bash -s -- -f -g | awk '/iperf3 Network Speed Tests \(/,/^$/'
+    curl -sL yabs.sh | bash -s -- -f -g -r | awk '/iperf3 Network Speed Tests \(/,/^$/'
     
     # Processes
     echo -e "${YL}\n TOP 20 PROCESSES LOADING THE SYSTEM NOW${CR}"
@@ -419,31 +419,6 @@ END {
 				echo -e "\tStopped - slower than discovered (or unreachable)"
 			fi
 		done
-		
-		for entry in "${sorted_servers[@]}"; do
-			hostname="${entry%% *}"
-			city="${entry##* }"
-			city="${city//_/ }"  # Замінюємо підкреслення на пробіли
-		
-			# Відображаємо статус перевірки
-			printf "  ➜ Pinging %-15s %-30s %-4s" "$city" "$hostname" $'\u00A0'
-		
-			avg_ping=$(ping -c 4 "$hostname" | grep 'avg' | awk -F'/' '{print $5}' 2>/dev/null)
-			avg_ping=$(echo "$avg_ping" | awk '{printf "%.3f", $1}')  # Округлюємо до 3 знаків після коми
-		
-			if [[ -n "$avg_ping" ]]; then
-				echo -e "\t$avg_ping ms"
-		
-				if [[ -z "$fastest_time" || "$fastest_time" == "9999999" || $(echo "$avg_ping < $fastest_time" | bc -l) -eq 1 ]]; then
-					fastest_time=$avg_ping
-					fastest_server=$hostname
-					fastest_city=$city
-				fi
-			else
-				echo -e "\tStopped - slower than discovered (or unreachable)"
-			fi
-		done
-
 	
 		# Display result
 		if [[ -n "$fastest_server" ]]; then
