@@ -2,13 +2,13 @@
 
 # Define constants for styling and file output
 # Colors with black text
-CB="\033[1;46m\033[1;30m" # Highlight cyan background, black text
-RD="\033[1;41m\033[1;30m" # Highlight red background, black text
-GN="\033[1;42m\033[1;30m" # Highlight green background, black text
-YL="\033[1;43m\033[1;30m" # Highlight yellow background, black text
-PU="\033[1;45m\033[1;30m" # Highlight purple background, black text
-BL="\033[1;44m\033[1;30m" # Highlight blue background, black text
-CR="\033[0m" # Reset color (no color)
+# CB="\033[1;46m\033[1;30m" # Highlight cyan background, black text
+# RD="\033[1;41m\033[1;30m" # Highlight red background, black text
+# GN="\033[1;42m\033[1;30m" # Highlight green background, black text
+# YL="\033[1;43m\033[1;30m" # Highlight yellow background, black text
+# PU="\033[1;45m\033[1;30m" # Highlight purple background, black text
+# BL="\033[1;44m\033[1;30m" # Highlight blue background, black text
+# CR="\033[0m" # Reset color (no color)
 DT=$(date '+%Y-%m-%d_%H-%M-%S') # Current timestamp
 OF="$HOME/hardware_info_${DT}.txt" # Output file name
 
@@ -47,6 +47,19 @@ check_and_install() {
 # Run package check and install
 check_and_install smartmontools jq lshw dmidecode ethtool fio sysstat
 
+# Перевірка підтримки кольорів терміналом
+if [[ -t 1 ]]; then
+    ncolors=$(tput colors)
+    if [[ -n "$ncolors" && "$ncolors" -ge 8 ]]; then
+        CB=$(tput setab 6)$(tput bold)$(tput setaf 0) # Cyan background, black text
+        RD=$(tput setab 1)$(tput bold)$(tput setaf 0) # Red background, black text
+        GN=$(tput setab 2)$(tput bold)$(tput setaf 0) # Green background, black text
+        YL=$(tput setab 3)$(tput bold)$(tput setaf 0) # Yellow background, black text
+        PU=$(tput setab 5)$(tput bold)$(tput setaf 0) # Purple background, black text
+        BL=$(tput setab 4)$(tput bold)$(tput setaf 0) # Blue background, black text
+        CR=$(tput sgr0)  # Reset color
+    fi
+fi
 
 # Notify the user about start
 echo -e " "
@@ -304,7 +317,7 @@ END {
     
     # Network Test
     echo -e "${BL}\n NETWORK TEST RESULTS${CR}"
-    echo "Waiting 2-5 min for test..."
+    echo "Wait 2-5 min while checking..."
     curl -sL yabs.sh | bash -s -- -f -g | awk '/iperf3 Network Speed Tests \(/,/^$/'
     
     # Processes
@@ -406,6 +419,31 @@ END {
 				echo -e "\tStopped - slower than discovered (or unreachable)"
 			fi
 		done
+		
+		for entry in "${sorted_servers[@]}"; do
+			hostname="${entry%% *}"
+			city="${entry##* }"
+			city="${city//_/ }"  # Замінюємо підкреслення на пробіли
+		
+			# Відображаємо статус перевірки
+			printf "  ➜ Pinging %-15s %-30s %-4s" "$city" "$hostname" $'\u00A0'
+		
+			avg_ping=$(ping -c 4 "$hostname" | grep 'avg' | awk -F'/' '{print $5}' 2>/dev/null)
+			avg_ping=$(echo "$avg_ping" | awk '{printf "%.3f", $1}')  # Округлюємо до 3 знаків після коми
+		
+			if [[ -n "$avg_ping" ]]; then
+				echo -e "\t$avg_ping ms"
+		
+				if [[ -z "$fastest_time" || "$fastest_time" == "9999999" || $(echo "$avg_ping < $fastest_time" | bc -l) -eq 1 ]]; then
+					fastest_time=$avg_ping
+					fastest_server=$hostname
+					fastest_city=$city
+				fi
+			else
+				echo -e "\tStopped - slower than discovered (or unreachable)"
+			fi
+		done
+
 	
 		# Display result
 		if [[ -n "$fastest_server" ]]; then
