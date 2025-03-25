@@ -434,6 +434,7 @@ END {
 		"slc.mainnet.block-engine.jito.wtf Salt_Lake_City"
 		"frankfurt.mainnet.block-engine.jito.wtf Frankfurt"
 		"amsterdam.mainnet.block-engine.jito.wtf Amsterdam"
+  		"london.mainnet.block-engine.jito.wtf London"
 		"tokyo.mainnet.block-engine.jito.wtf Tokyo"
 	)
 	
