@@ -377,7 +377,7 @@ END {
 				if [[ "$entry" =~ "$region" ]]; then
 					primary_servers+=("$entry")
 					matched=1
-					# break
+					break
 				fi
 			done
 			[[ $matched -eq 0 ]] && secondary_servers+=("$entry")
@@ -445,8 +445,22 @@ END {
 	)
 	
 	# Run tests for both networks
-	find_fastest_server "Mainnet" "${mainnet_servers[@]}"
-	find_fastest_server "Testnet" "${testnet_servers[@]}"
+	# find_fastest_server "Mainnet" "${mainnet_servers[@]}"
+	# find_fastest_server "Testnet" "${testnet_servers[@]}"
+	for entry in "amsterdam.mainnet.block-engine.jito.wtf Amsterdam" "dublin.mainnet.block-engine.jito.wtf Dublin" "frankfurt.mainnet.block-engine.jito.wtf Frankfurt" "london.mainnet.block-engine.jito.wtf London" "ny.mainnet.block-engine.jito.wtf New_York" "slc.mainnet.block-engine.jito.wtf Salt_Lake_City"  "singapore.mainnet.block-engine.jito.wtf Singapore" "tokyo.mainnet.block-engine.jito.wtf Tokyo"; do
+	  hostname="${entry%% *}"
+	  city="${entry##* }"
+	  echo -n "Ping $city ($hostname) - "
+	  ping -c 4 "$hostname" | grep 'avg' | awk -F'/' '{print $5 " ms"}'
+	done
+
+	for entry in "dallas.testnet.block-engine.jito.wtf Dallas" "ny.testnet.block-engine.jito.wtf New_York"; do
+	  hostname="${entry%% *}"
+	  city="${entry##* }"
+	  echo -n "Ping $city ($hostname) - "
+	  ping -c 4 "$hostname" | grep 'avg' | awk -F'/' '{print $5 " ms"}'
+	done
+
 	
 	# Provide additional information
 	echo -e "Check Jito's https://docs.jito.wtf/lowlatencytxnsend/#api"
