@@ -377,7 +377,7 @@ END {
 				if [[ "$entry" =~ "$region" ]]; then
 					primary_servers+=("$entry")
 					matched=1
-					break
+					# break
 				fi
 			done
 			[[ $matched -eq 0 ]] && secondary_servers+=("$entry")
